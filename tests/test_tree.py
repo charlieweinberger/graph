@@ -2,25 +2,14 @@ import sys
 sys.path.append('src')
 from tree import Tree
 
-edges = [('a','c'), ('e','g'), ('e','i'), ('e','a'), ('g','b'), ('a','d'), ('d','f'), ('f','h'), ('d','j'), ('c','k')]
+edges = [('a','c'), ('e','g'), ('e','i'), ('e','a'), ('d','b'), ('a','d'), ('d','f'), ('f','h'), ('d','j'), ('d','k')]
 tree = Tree(edges)
-
 tree.build_from_edges()
 
-assert tree.root.value == 'e'
+nodes = tree.nodes_breadth_first()
+assert [node.value for node in nodes] == ['e','g','i','a','c','d','b','f','j','k','h'], [node.value for node in nodes]
 
-assert sorted([node.value for node in tree.root.children]) == sorted(['a', 'i', 'g']), sorted([node.value for node in tree.root.children])
+nodes = tree.nodes_depth_first()
+assert [node.value for node in nodes] == ['e','g','i','a','c','d','b','f','h','j','k'], [node.value for node in nodes]
 
-assert sorted([node.value for node in tree.root.children[0].children]) == sorted(['c', 'd']), sorted([node.value for node in tree.root.children[0].children]) # children of a
-assert sorted([node.value for node in tree.root.children[1].children]) == sorted(['b']), sorted([node.value for node in tree.root.children[1].children]) # children of g
-assert sorted([node.value for node in tree.root.children[2].children]) == sorted([]), sorted([node.value for node in tree.root.children[2].children]) # children of i
-
-assert sorted([node.value for node in tree.root.children[1].children[0].children]) == sorted([]), sorted([node.value for node in tree.root.children[2].children[0].children]) # children of b
-assert sorted([node.value for node in tree.root.children[0].children[0].children]) == sorted(['k']), sorted([node.value for node in tree.root.children[0].children[0].children]) # children of c
-assert sorted([node.value for node in tree.root.children[0].children[1].children]) == sorted(['j', 'f']), sorted([node.value for node in tree.root.children[0].children[1].children]) # children of d
-
-assert sorted([node.value for node in tree.root.children[0].children[0].children[0].children]) == sorted([]), sorted([node.value for node in tree.root.children[0].children[0].children[0].children]) # children of k
-assert sorted([node.value for node in tree.root.children[0].children[1].children[0].children]) == sorted(['h']), sorted([node.value for node in tree.root.children[0].children[1].children[1].children]) # children of f
-assert sorted([node.value for node in tree.root.children[0].children[1].children[1].children]) == sorted([]), sorted([node.value for node in tree.root.children[0].children[1].children[0].children]) # children of j
-
-print("passed all tests")
+print("passed all")
