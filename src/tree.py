@@ -17,8 +17,6 @@ class Tree():
         self.edges_values = [[self.node_values[i] for i in pair] for pair in self.edges]        
         
         self.root = self.get_root()
-    
-    # self.get_children(4) = [6, 8, 0]
 
     def get_children(self, parent):
         ans = []
@@ -54,7 +52,7 @@ class Tree():
                 node.children = new_children
                 child_array += new_children
             
-            node_array = list(child_array)        
+            node_array = list(child_array)
 
     def nodes_breadth_first(self):
         queue = [self.root]
