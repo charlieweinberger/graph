@@ -8,6 +8,8 @@ edges = [(0,2), (4,6), (4,8), (4,0), (3,1), (0,3), (3,5), (5,7), (3,9), (3,10)]
 tree = Tree(edges, node_values)
 tree.build_from_edges()
 
+print("\ntree tree.edges:", tree.edges)
+
 """
 The indices of the nodes are as follows:
 
