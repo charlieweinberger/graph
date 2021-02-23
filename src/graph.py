@@ -22,7 +22,7 @@ class Graph():
         return True if node1.index == node2.index else False
 
     def if_node_in(self, node, node_list):
-        return True if node.index in self.find_indices(node_list) else False
+        return node.index in self.find_indices(node_list)
     
     def get_neighbors(self, node):
         neighbors = []
