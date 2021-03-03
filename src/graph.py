@@ -17,10 +17,8 @@ class Graph():
     
     def find_indices(self, input_list):
         return [node.index for node in input_list]
-    
     def same_node_as(self, node1, node2):
         return True if node1.index == node2.index else False
-
     def if_node_in(self, node, node_list):
         return node.index in self.find_indices(node_list)
     
@@ -33,7 +31,6 @@ class Graph():
                         neighbor = Node(elem)
                         neighbors.append(neighbor)
         return neighbors
-    
     def build_from_edges(self):
 
         indices = []
@@ -50,7 +47,6 @@ class Graph():
                 self.nodes[index].neighbors.append(neighbor_index)
         
         self.indices = self.find_indices(self.nodes)
-
     def get_nodes_breadth_first(self, starting_node_index):
 
         starting_node = self.nodes[starting_node_index]
@@ -68,7 +64,6 @@ class Graph():
             visited.append(current_node)
         
         return visited
-    
     def get_nodes_depth_first(self, starting_node_index):
 
         starting_node = self.nodes[starting_node_index]
