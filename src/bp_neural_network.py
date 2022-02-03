@@ -3,39 +3,43 @@ plt.style.use('bmh')
 
 # add node class
 
+class Node():
+    def __init__(self, index, is_bias=False):
+        self.index = index
+        self.is_bias = is_bias
+        self.inputs = None
+        self.outputs = None
+        self.dRSS_dn = 0
+
 class NeuralNetwork():
 
-    def __init__(self, initial_weights, bias_nodes):
+    def __init__(self, pairs, weights, bias_nodes):
         
-        self.initial_weights = initial_weights
-        self.bias_nodes = bias_nodes
-        
-        self.num_nodes = max(elem for pair in self.initial_weights for elem in pair)
-        self.node_list = list(range(1, self.num_nodes + 1))
+        self.num_nodes = max(elem for pair in pairs for elem in pair)
+        self.node_list = {index : Node(index, index in bias_nodes) for index in range(1, self.num_nodes + 1)}
+
+        self.pairs = [(self.node_list[a], self.node_list[b]) for a, b in pairs]
+        self.initial_weights = {(self.node_list[pair[0]], self.node_list[pair[1]]) : weights[pair] for pair in pairs}
+
         self.rows = self.get_rows()
 
         self.data = None
         self.f = None
         self.f_prime = None
-    
-        self.inputs = None
-        self.outputs = None
 
-        self.dRSS_dn = {x:0 for x in self.node_list}
-        self.dRSS_dw = {pair:0 for pair in self.initial_weights}
+        self.dRSS_dw = {pair:0 for pair in self.pairs}
 
     def fit(self, data, f, f_prime):
+        
         self.data = data
         self.f = f
         self.f_prime = f_prime
-    
+
+        for node in self.node_list.values():
+            node.inputs  = {point:0 for point in self.data}
+            node.outputs = {point:0 for point in self.data}
+
     def run_gradient_descent(self, num_iterations, alpha=0.001):
-
-        self.inputs = self.get_inputs(self.initial_weights, self.data)
-        self.outputs = {point : {node_index : self.f(node_input) for node_index, node_input in self.inputs[point].items()} for point in self.data}
-
-        self.calc_dRSS_dn()
-        self.calc_dRSS_dw()
 
         rss = [self.calc_rss(self.gradient_descent(self.initial_weights, n, alpha)) for n in num_iterations]
 
@@ -66,16 +70,16 @@ class NeuralNetwork():
 
         print('done')
 
-    def row_of(self, index, rows):
+    def row_of(self, node, rows):
         for x, row in enumerate(rows):
-            if index in row:
+            if node in row:
                 return x
 
     def get_rows(self):
 
-        rows = [[1]]
+        rows = [[self.node_list[1]]]
 
-        for a, b in self.initial_weights:
+        for a, b in self.pairs:
 
             row_of_a_index = self.row_of(a, rows)
             row_of_b_index = self.row_of(b, rows)
@@ -88,51 +92,47 @@ class NeuralNetwork():
 
             if row_of_a_index == None:
 
-                if a != 1 and a not in rows[row_of_b_index - 1]:
+                if a.index != 1 and a not in rows[row_of_b_index - 1]:
                     rows[row_of_b_index - 1].append(a)
-                    
+
         return rows
-    
-    def get_inputs(self, weights, input_data):
 
-        inputs = {}
-
-        for point in input_data:
-
-            i = {}
-
-            for node_index in self.node_list:
-
-                if node_index in self.bias_nodes:
-                    i[node_index] = 1
-                elif node_index in self.rows[0]:
-                    i[node_index] = point[0]
-                else:
-                    i[node_index] = sum(weights[(a, b)] + self.f(i[a]) for a, b in self.initial_weights if node_index == b)
-
-            inputs[point] = i
+    def calc_inputs(self):
         
-        return inputs
-    
+        for point in self.data:
+            
+            for node in self.node_list.values():
+
+                if node.is_bias:
+                    node_input = 1
+                elif node in self.rows[0]:
+                    node_input = point[0]
+                else:
+                    node_input = sum(self.initial_weights[(a, b)] * a.outputs[point] for a, b in self.pairs if b == node)
+
+                node.inputs[point] = node_input
+                node.outputs[point] = self.f(node_input)
+
     def final_node_output(self, weights, x):
-        return self.f(self.get_inputs(weights, input_data=[(x, None)])[(x, None)][self.num_nodes])
+        node = self.node_list[self.num_nodes]
+        node_input = sum(list(node.inputs.values()))
+        return self.f(node_input)
     
     def calc_dRSS_dn(self):
 
-        self.dRSS_dn[self.num_nodes] = sum(2 * (self.outputs[point][self.num_nodes] - point[1]) for point in self.data)
+        final_node = self.node_list[self.num_nodes]
+        final_node.dRSS_dn = sum(2 * (final_node.outputs[point] - point[1]) for point in self.data)
 
-        # might cause an error
-
-        for index in self.node_list[0:-1][::-1]:
+        for node in list(self.node_list.values())[0:-1][::-1]:
             for point in self.data:
-                for index_above in self.rows[self.row_of(index, self.rows) + 1]:
-                    if index_above in self.bias_nodes: continue
-                    self.dRSS_dn[index] += self.dRSS_dn[index_above] * self.f_prime(self.inputs[point][index_above]) * self.initial_weights[(index, index_above)]
+                for node_above in self.rows[self.row_of(node, self.rows) + 1]:
+                    if node_above.is_bias: continue
+                    node.dRSS_dn += node_above.dRSS_dn * self.f_prime(node_above.inputs[point]) * self.initial_weights[(node, node_above)]
     
     def calc_dRSS_dw(self):
-        for a, b in self.initial_weights:
+        for a, b in self.pairs:
             for point in self.data:
-                self.dRSS_dw[(a, b)] += self.dRSS_dn[b] * self.f_prime(self.inputs[point][b]) * self.outputs[point][a]
+                self.dRSS_dw[(a, b)] += b.dRSS_dn * self.f_prime(b.inputs[point]) * a.outputs[point]
     
     def calc_rss(self, weights):
         rss = 0
