@@ -1,6 +1,8 @@
 import matplotlib.pyplot as plt
 plt.style.use('bmh')
 
+# add node class
+
 class NeuralNetwork():
 
     def __init__(self, initial_weights, bias_nodes):
@@ -118,6 +120,8 @@ class NeuralNetwork():
     def calc_dRSS_dn(self):
 
         self.dRSS_dn[self.num_nodes] = sum(2 * (self.outputs[point][self.num_nodes] - point[1]) for point in self.data)
+
+        # might cause an error
 
         for index in self.node_list[0:-1][::-1]:
             for point in self.data:
