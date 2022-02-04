@@ -32,7 +32,7 @@ def get_inputs(weights, input_data=data):
 
         i = {}
 
-        for node_index in node_list:
+        for node_index in nodes:
 
             if node_index in bias_nodes:
                 i[node_index] = 1
@@ -53,10 +53,10 @@ outputs = {point:{index:f(i) for index, i in inputs[point].items()} for point in
 
 # calculating neural gradients
 
-dRSS_dn = {x:0 for x in node_list}
+dRSS_dn = {x:0 for x in nodes}
 dRSS_dn[num_nodes] = sum(2 * (outputs[point][num_nodes] - point[1]) for point in data)
 
-for index in node_list[0:-1][::-1]:
+for index in nodes[0:-1][::-1]:
     rows_index = [x for x, row in enumerate(rows) if index in row][0]
     for point in data:
         for index_above in rows[rows_index + 1]:
