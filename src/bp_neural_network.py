@@ -7,7 +7,7 @@ class Node():
         self.is_bias = is_bias
         self.inputs = None
         self.outputs = None
-        self.dRSS_dn = 0
+        self.dRSS_dn = None
 
 class NeuralNetwork():
 
@@ -37,6 +37,7 @@ class NeuralNetwork():
         for node in self.node_list.values():
             node.inputs  = {point:0 for point in self.data}
             node.outputs = {point:0 for point in self.data}
+            node.dRSS_dn = {point:0 for point in self.data}
 
     def run_gradient_descent(self, num_iterations_list, alpha=0.001):
 
@@ -136,28 +137,32 @@ class NeuralNetwork():
 
     def calc_dRSS_dn(self):
 
-        final_node = self.node_list[self.num_nodes]
-        final_node.dRSS_dn = sum(2 * (final_node.outputs[point] - point[1]) for point in self.data)
+        self.node_list[self.num_nodes] = self.node_list[self.num_nodes]
 
         for point in self.data:
-            self.node_list[5].dRSS_dn += final_node.dRSS_dn * self.f_prime(final_node.inputs[point]) * self.initial_weights[(self.node_list[5], final_node)]
-            self.node_list[4].dRSS_dn += final_node.dRSS_dn * self.f_prime(final_node.inputs[point]) * self.initial_weights[(self.node_list[4], final_node)]
-            self.node_list[3].dRSS_dn += final_node.dRSS_dn * self.f_prime(final_node.inputs[point]) * self.initial_weights[(self.node_list[3], final_node)]
+            self.node_list[self.num_nodes].dRSS_dn[point] = 2 * (self.node_list[self.num_nodes].outputs[point] - point[1])
+
+        # I WAS MISSING THE PARENTHASES AUHOASDHIAWORUNAADASASDOASA
 
         for point in self.data:
-            self.node_list[2].dRSS_dn += self.node_list[3].dRSS_dn * self.f_prime(self.node_list[3].inputs[point]) * self.initial_weights[(self.node_list[2], self.node_list[3])] + self.node_list[4].dRSS_dn * self.f_prime(self.node_list[4].inputs[point]) * self.initial_weights[(self.node_list[2], self.node_list[4])]
-            self.node_list[1].dRSS_dn += self.node_list[3].dRSS_dn * self.f_prime(self.node_list[3].inputs[point]) * self.initial_weights[(self.node_list[1], self.node_list[3])] + self.node_list[4].dRSS_dn * self.f_prime(self.node_list[4].inputs[point]) * self.initial_weights[(self.node_list[1], self.node_list[4])]
+            self.node_list[5].dRSS_dn[point] = self.node_list[self.num_nodes].dRSS_dn[point] * self.f_prime(self.node_list[self.num_nodes].inputs[point]) * self.initial_weights[(self.node_list[5], self.node_list[self.num_nodes])]
+            self.node_list[4].dRSS_dn[point] = self.node_list[self.num_nodes].dRSS_dn[point] * self.f_prime(self.node_list[self.num_nodes].inputs[point]) * self.initial_weights[(self.node_list[4], self.node_list[self.num_nodes])]
+            self.node_list[3].dRSS_dn[point] = self.node_list[self.num_nodes].dRSS_dn[point] * self.f_prime(self.node_list[self.num_nodes].inputs[point]) * self.initial_weights[(self.node_list[3], self.node_list[self.num_nodes])]
 
-        # for node in list(self.node_list.values())[0:-1][::-1]:
+        for point in self.data:
+            self.node_list[2].dRSS_dn[point] += self.node_list[3].dRSS_dn[point] * self.f_prime(self.node_list[3].inputs[point]) * self.initial_weights[(self.node_list[2], self.node_list[3])] + self.node_list[4].dRSS_dn[point] * self.f_prime(self.node_list[4].inputs[point]) * self.initial_weights[(self.node_list[2], self.node_list[4])]
+            self.node_list[1].dRSS_dn[point] += self.node_list[3].dRSS_dn[point] * self.f_prime(self.node_list[3].inputs[point]) * self.initial_weights[(self.node_list[1], self.node_list[3])] + self.node_list[4].dRSS_dn[point] * self.f_prime(self.node_list[4].inputs[point]) * self.initial_weights[(self.node_list[1], self.node_list[4])]
+
+        # for node in list(self.node_list.values())[0:-1][::-1]:            
         #     for point in self.data:
         #         for node_above in self.rows[self.row_of(node, self.rows) + 1]:
-        #             if node_above.is_bias: continue
-        #             node.dRSS_dn += node_above.dRSS_dn * self.f_prime(node_above.inputs[point]) * self.initial_weights[(node, node_above)]
+        #             if not node.is_bias:
+        #                 node.dRSS_dn[point] += node_above.dRSS_dn[point] * self.f_prime(node_above.inputs[point]) * self.initial_weights[(node, node_above)]
     
     def calc_dRSS_dw(self):
         for a, b in self.pairs:
             for point in self.data:
-                self.dRSS_dw[(a, b)] += b.dRSS_dn * self.f_prime(b.inputs[point]) * a.outputs[point]
+                self.dRSS_dw[(a, b)] += b.dRSS_dn[point] * self.f_prime(b.inputs[point]) * a.outputs[point]
 
     def calc_rss(self, weights):
         rss = 0
