@@ -53,20 +53,20 @@ class NeuralNetwork():
 
         # plot 2
 
-        plt.figure(2)
-        plt.scatter([point[0] for point in self.data], [point[1] for point in self.data], label='data')
+        # plt.figure(2)
+        # plt.scatter([point[0] for point in self.data], [point[1] for point in self.data], label='data')
 
-        x_list = list(range(self.num_nodes + 1))
+        # x_list = list(range(self.num_nodes + 1))
 
-        initial_y_list = [self.predict(self.initial_weights, x) for x in x_list]
-        plt.plot(x_list, initial_y_list, label='initial regressor')
+        # initial_y_list = [self.predict(self.initial_weights, x) for x in x_list]
+        # plt.plot(x_list, initial_y_list, label='initial regressor')
 
-        final_weights = self.gradient_descent(self.initial_weights, 1000, alpha)
-        final_y_list = [self.predict(final_weights, x) for x in x_list]
-        plt.plot(x_list, final_y_list, label='final regressor')
+        # final_weights = self.gradient_descent(self.initial_weights, 1000, alpha)
+        # final_y_list = [self.predict(final_weights, x) for x in x_list]
+        # plt.plot(x_list, final_y_list, label='final regressor')
 
-        plt.legend()
-        plt.savefig('bp_data_vs_initial_regressor_vs_final_regressor.png')
+        # plt.legend()
+        # plt.savefig('bp_data_vs_initial_regressor_vs_final_regressor.png')
 
         print('done')
 
@@ -116,6 +116,31 @@ class NeuralNetwork():
                 node.inputs[point] = node_input
                 node.outputs[point] = self.f(node_input)
 
+    def calc_dRSS_dn(self):
+
+        for point in self.data:
+            self.node_list[6].dRSS_dn[point] = 2 * (self.node_list[6].outputs[point] - point[1])
+
+        for point in self.data:
+            self.node_list[5].dRSS_dn[point] = self.node_list[6].dRSS_dn[point] * self.f_prime(self.node_list[6].inputs[point]) * self.initial_weights[(self.node_list[5], self.node_list[6])]
+            self.node_list[4].dRSS_dn[point] = self.node_list[6].dRSS_dn[point] * self.f_prime(self.node_list[6].inputs[point]) * self.initial_weights[(self.node_list[4], self.node_list[6])]
+            self.node_list[3].dRSS_dn[point] = self.node_list[6].dRSS_dn[point] * self.f_prime(self.node_list[6].inputs[point]) * self.initial_weights[(self.node_list[3], self.node_list[6])]
+
+        for point in self.data:
+            self.node_list[2].dRSS_dn[point] += self.node_list[3].dRSS_dn[point] * self.f_prime(self.node_list[3].inputs[point]) * self.initial_weights[(self.node_list[2], self.node_list[3])] + self.node_list[4].dRSS_dn[point] * self.f_prime(self.node_list[4].inputs[point]) * self.initial_weights[(self.node_list[2], self.node_list[4])]
+            self.node_list[1].dRSS_dn[point] += self.node_list[3].dRSS_dn[point] * self.f_prime(self.node_list[3].inputs[point]) * self.initial_weights[(self.node_list[1], self.node_list[3])] + self.node_list[4].dRSS_dn[point] * self.f_prime(self.node_list[4].inputs[point]) * self.initial_weights[(self.node_list[1], self.node_list[4])]
+
+    def calc_dRSS_dw(self):
+        for a, b in self.pairs:
+            for point in self.data:
+                self.dRSS_dw[(a, b)] += b.dRSS_dn[point] * self.f_prime(b.inputs[point]) * a.outputs[point]
+
+    def calc_rss(self, weights):
+        rss = 0
+        for x, y in self.data:
+            rss += (self.predict(weights, x) - y) ** 2
+        return rss
+
     def predict(self, weights, x):
 
         i = {}
@@ -134,41 +159,6 @@ class NeuralNetwork():
         # node = self.node_list[self.num_nodes]
         # node_input = node.inputs[point]
         # return self.f(node_input)
-
-    def calc_dRSS_dn(self):
-
-        self.node_list[self.num_nodes] = self.node_list[self.num_nodes]
-
-        for point in self.data:
-            self.node_list[self.num_nodes].dRSS_dn[point] = 2 * (self.node_list[self.num_nodes].outputs[point] - point[1])
-
-        # I WAS MISSING THE PARENTHASES AUHOASDHIAWORUNAADASASDOASA
-
-        for point in self.data:
-            self.node_list[5].dRSS_dn[point] = self.node_list[self.num_nodes].dRSS_dn[point] * self.f_prime(self.node_list[self.num_nodes].inputs[point]) * self.initial_weights[(self.node_list[5], self.node_list[self.num_nodes])]
-            self.node_list[4].dRSS_dn[point] = self.node_list[self.num_nodes].dRSS_dn[point] * self.f_prime(self.node_list[self.num_nodes].inputs[point]) * self.initial_weights[(self.node_list[4], self.node_list[self.num_nodes])]
-            self.node_list[3].dRSS_dn[point] = self.node_list[self.num_nodes].dRSS_dn[point] * self.f_prime(self.node_list[self.num_nodes].inputs[point]) * self.initial_weights[(self.node_list[3], self.node_list[self.num_nodes])]
-
-        for point in self.data:
-            self.node_list[2].dRSS_dn[point] += self.node_list[3].dRSS_dn[point] * self.f_prime(self.node_list[3].inputs[point]) * self.initial_weights[(self.node_list[2], self.node_list[3])] + self.node_list[4].dRSS_dn[point] * self.f_prime(self.node_list[4].inputs[point]) * self.initial_weights[(self.node_list[2], self.node_list[4])]
-            self.node_list[1].dRSS_dn[point] += self.node_list[3].dRSS_dn[point] * self.f_prime(self.node_list[3].inputs[point]) * self.initial_weights[(self.node_list[1], self.node_list[3])] + self.node_list[4].dRSS_dn[point] * self.f_prime(self.node_list[4].inputs[point]) * self.initial_weights[(self.node_list[1], self.node_list[4])]
-
-        # for node in list(self.node_list.values())[0:-1][::-1]:            
-        #     for point in self.data:
-        #         for node_above in self.rows[self.row_of(node, self.rows) + 1]:
-        #             if not node.is_bias:
-        #                 node.dRSS_dn[point] += node_above.dRSS_dn[point] * self.f_prime(node_above.inputs[point]) * self.initial_weights[(node, node_above)]
-    
-    def calc_dRSS_dw(self):
-        for a, b in self.pairs:
-            for point in self.data:
-                self.dRSS_dw[(a, b)] += b.dRSS_dn[point] * self.f_prime(b.inputs[point]) * a.outputs[point]
-
-    def calc_rss(self, weights):
-        rss = 0
-        for x, y in self.data:
-            rss += (self.predict(weights, x) - y) ** 2
-        return rss
 
     def gradient_descent(self, weights, num_iterations, alpha):
         for _ in range(num_iterations):

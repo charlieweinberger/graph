@@ -18,15 +18,6 @@ alpha = 0.0001
 nn = NeuralNetwork(pairs, initial_weights, bias_nodes)
 nn.fit(data, f, f_prime)
 nn.calc_inputs()
-
 nn.calc_dRSS_dn()
-
-print(nn.node_list[6].dRSS_dn)
-print(nn.node_list[5].dRSS_dn)
-
 nn.calc_dRSS_dw()
-
-node_1, node_2, node_3, node_4, node_5, node_6 = nn.node_list.values()
-print(nn.dRSS_dw[(node_5, node_6)])
-
 nn.run_gradient_descent(num_iterations_list, alpha)
