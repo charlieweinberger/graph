@@ -24,3 +24,5 @@ nn.calc_dRSS_dw()
 nn.print_dict(nn.dRSS_dw)
 
 nn.run_gradient_descent(num_iterations_list, alpha)
+
+nn.print_dict(nn.dRSS_dw)
