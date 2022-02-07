@@ -41,12 +41,19 @@ class NeuralNetwork():
 
     def run_gradient_descent(self, num_iterations_list, alpha=0.001):
 
-        rss = [self.calc_rss(self.gradient_descent(self.copy_dict(self.initial_weights), n, alpha)) for n in num_iterations_list]
+        # rss_list = [self.calc_rss(self.gradient_descent(self.copy_dict(self.initial_weights), n, alpha)) for n in num_iterations_list]
+
+        rss_list = []
+        for n in num_iterations_list:
+            weights = self.copy_dict(self.initial_weights)
+            gradient_desc = self.gradient_descent(weights, n, alpha)
+            rss = self.calc_rss(gradient_desc)
+            rss_list.append(rss)
 
         # plot 1
 
         plt.figure(0)
-        plt.plot(num_iterations_list, rss)
+        plt.plot(num_iterations_list, rss_list)
         plt.xlabel('num_iterations')
         plt.ylabel('rss')
         plt.savefig('bp_num_iterations_vs_rss.png')
@@ -72,6 +79,9 @@ class NeuralNetwork():
 
     def copy_dict(self, dictionary):
         return {key:value for key, value in dictionary.items()}
+
+    def print_dict(self, dictionary):
+        print({(pair[0].index, pair[1].index) : round(weight, 10) for pair, weight in dictionary.items()})
 
     def row_of(self, node, rows):
         for x, row in enumerate(rows):
@@ -145,20 +155,27 @@ class NeuralNetwork():
 
         i = {}
 
-        for node in self.node_list.values():
+        output = lambda node_index: self.f(i[self.node_list[node_index].index])
 
-            if node.is_bias:
-                i[node.index] = 1
-            elif node.index in self.rows[0]:
-                i[node.index] = x
-            else:
-                i[node.index] = sum(weights[(a, b)] + self.f(i[a.index]) for a, b in self.initial_weights if b == node)
+        # self.print_dict(weights)
 
-        return self.f(i[self.num_nodes])
-        
-        # node = self.node_list[self.num_nodes]
-        # node_input = node.inputs[point]
-        # return self.f(node_input)
+        i[1] = x
+        i[2] = 1
+        i[3] = weights[(self.node_list[1], self.node_list[3])] * output(1) + weights[(self.node_list[2], self.node_list[3])] * output(2)
+        i[4] = weights[(self.node_list[1], self.node_list[4])] * output(1) + weights[(self.node_list[2], self.node_list[4])] * output(2)
+        i[5] = 1
+        i[6] = weights[(self.node_list[3], self.node_list[6])] * output(3) + weights[(self.node_list[4], self.node_list[6])] * output(4) + 1
+
+        # for node in self.node_list.values():
+
+        #     if node.is_bias:
+        #         i[node.index] = 1
+        #     elif node.index in self.rows[0]:
+        #         i[node.index] = x
+        #     else:
+        #         i[node.index] = sum(weights[(a, b)] * self.f(i[a.index]) for a, b in self.initial_weights if b == node)
+
+        return self.f(i[6])
 
     def gradient_descent(self, weights, num_iterations, alpha):
         for _ in range(num_iterations):
