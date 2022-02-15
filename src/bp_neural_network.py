@@ -1,6 +1,12 @@
 import matplotlib.pyplot as plt
 plt.style.use('bmh')
 
+def copy_dict(dictionary):
+    return {key:value for key, value in dictionary.items()}
+
+def print_dict(dictionary):
+    print({(pair[0].index, pair[1].index) : round(weight, 10) for pair, weight in dictionary.items()})
+
 class Node():
     def __init__(self, index, is_bias=False):
         self.index = index
@@ -41,11 +47,11 @@ class NeuralNetwork():
 
     def run_gradient_descent(self, num_iterations_list, alpha=0.001):
 
-        # rss_list = [self.calc_rss(self.gradient_descent(self.copy_dict(self.initial_weights), n, alpha)) for n in num_iterations_list]
+        # rss_list = [self.calc_rss(self.gradient_descent(copy_dict(self.initial_weights), n, alpha)) for n in num_iterations_list]
 
         rss_list = []
         for n in num_iterations_list:
-            weights = self.copy_dict(self.initial_weights)
+            weights = copy_dict(self.initial_weights)
             gradient_desc = self.gradient_descent(weights, n, alpha)
             rss = self.calc_rss(gradient_desc)
             rss_list.append(rss)
@@ -76,12 +82,6 @@ class NeuralNetwork():
         # plt.savefig('bp_data_vs_initial_regressor_vs_final_regressor.png')
 
         print('done')
-
-    def copy_dict(self, dictionary):
-        return {key:value for key, value in dictionary.items()}
-
-    def print_dict(self, dictionary):
-        print({(pair[0].index, pair[1].index) : round(weight, 10) for pair, weight in dictionary.items()})
 
     def row_of(self, node, rows):
         for x, row in enumerate(rows):
@@ -157,7 +157,7 @@ class NeuralNetwork():
 
         output = lambda node_index: self.f(i[self.node_list[node_index].index])
 
-        # self.print_dict(weights)
+        # print_dict(weights)
 
         i[1] = x
         i[2] = 1
