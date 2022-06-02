@@ -12,7 +12,8 @@ data = [(0, 5), (2, 3), (5, 10)]
 f = lambda x: max(0, x)
 f_prime = lambda x: 0 if x <= 0 else 1
 
-num_iterations_list = [1, 2, 5, 10, 50, 100, 200, 500]
+# num_iterations_list = [1, 2, 5, 10, 50, 100, 200, 500]
+num_iterations_list = [3]
 alpha = 0.001
 
 nn = NeuralNetwork(pairs, initial_weights, bias_nodes)
@@ -20,8 +21,6 @@ nn.fit(data, f, f_prime)
 nn.calc_inputs()
 nn.calc_dRSS_dn()
 nn.calc_dRSS_dw()
-
-# print_dict(nn.dRSS_dw)
 
 nn.run_gradient_descent(num_iterations_list)
 
@@ -62,5 +61,3 @@ nn.run_gradient_descent(num_iterations_list)
 # plt.savefig('bp_data_vs_initial_regressor_vs_final_regressor.png')
 
 # print('done')
-
-# print_dict(nn.dRSS_dw)
