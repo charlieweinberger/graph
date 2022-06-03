@@ -1,7 +1,5 @@
 import matplotlib.pyplot as plt
 plt.style.use('bmh')
-import sys
-sys.path.append('nn/bp')
 from bp import *
 
 weights = {(1, 3): 1, (1, 4): 1, (2, 3): 1, (2, 4): 1, (3, 6): 1, (4, 6): 1, (5, 6): 1}

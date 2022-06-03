@@ -21,7 +21,7 @@ class NeuralNet():
 
         self.connect_nodes()
 
-    def normalize_data(self , data, normalize):
+    def normalize_data(self, data, normalize):
         if not normalize:
             return data
         else:
@@ -31,7 +31,7 @@ class NeuralNet():
 
     def get_node(self, node_index):
         for node in self.nodes:
-            if node.index == int(node_index):
+            if node.index == node_index:
                 return node
 
     def connect_nodes(self):
