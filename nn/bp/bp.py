@@ -10,16 +10,24 @@ class Node():
 
 class NeuralNet():
 
-    def __init__(self, weights, f, data, bias_node_indices):
+    def __init__(self, weights, f, data, bias_node_indices, normalize=False):
         
         self.weights = {k:v for k,v in weights.items()}
         self.num_nodes = max(elem for pair in self.weights for elem in pair)
         self.nodes = [Node(index, index in bias_node_indices) for index in range(1, self.num_nodes + 1)]
         
         self.f = f
-        self.data = data
-        
+        self.data = self.normalize_data(data, normalize)
+
         self.connect_nodes()
+
+    def normalize_data(self , data, normalize):
+        if not normalize:
+            return data
+        else:
+            x = [point[0] for point in data]
+            y = [point[1] for point in data]
+            return [(10 * (px - min(x)) / (max(x) - min(x)), 10 * (py - min(y)) / (max(y) - min(y))) for px, py in data]
 
     def get_node(self, node_index):
         for node in self.nodes:
