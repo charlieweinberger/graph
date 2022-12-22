@@ -7,32 +7,33 @@ class Node():
 
 # To compute distances and shortest paths in a directed graph, you will use the same approach that you did in the plain old Graph, but instead of considering a node's neighbors each time, you will consider its children.
 
-# edges = [(0,1),(1,2),(3,1),(4,3),(1,4),(4,5),(3,6)]
+# Ex: edges = [(0,1),(1,2),(3,1),(4,3),(1,4),(4,5),(3,6)]
 
 class DirectedGraph():
 
     def __init__(self, edges):
         self.edges = edges
         self.nodes = []
-        self.indices = []
-        
         self.build_from_edges()
     
+    def get_node(self, index):
+        for node in self.nodes:
+            if node.index == index:
+                return node
+
     def build_from_edges(self):
 
-        self.indices = [self.edges[0][0]]
-        for pair in self.edges:
-            if pair[1] not in self.indices:
-                self.indices.append(pair[1])
+        self.nodes = [Node(self.edges[0][0])]
 
-        for index in self.indices:
-            node = Node(index)
-            self.nodes.append(node)
+        for parent_index, child_index in self.edges:
+            if child_index not in [n.index for n in self.nodes]:
+                self.nodes.append(Node(child_index))
         
-        for pair in self.edges:
-            parent = self.nodes[pair[0]]
-            child = self.nodes[pair[1]]
-            
+        for parent_index, child_index in self.edges:
+
+            parent = self.get_node(parent_index)
+            child = self.get_node(child_index)
+
             if child not in parent.children:
                 parent.children.append(child)
             if parent not in child.parents:
