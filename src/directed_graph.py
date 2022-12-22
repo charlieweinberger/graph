@@ -25,7 +25,6 @@ class DirectedGraph():
             if pair[1] not in self.indices:
                 self.indices.append(pair[1])
 
-        node_list = []
         for index in self.indices:
             node = Node(index)
             self.nodes.append(node)
